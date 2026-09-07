@@ -38,20 +38,25 @@ export function parseBlinkUrl(
   }
 
   if (/^solana-action:/i.test(trimmed)) {
+    const rest = stripProtocolPrefix(trimmed, 'solana-action:');
+    if (!/^https?:\/\//i.test(rest)) {
+      throw new Error('A valid Blink action URL is required');
+    }
     return {
-      actionUrl: stripProtocolPrefix(trimmed, 'solana-action:'),
+      actionUrl: rest,
       source: 'solana-action',
     };
   }
 
   if (/^solana:/i.test(trimmed)) {
     const rest = stripProtocolPrefix(trimmed, 'solana:');
-    if (/^https?:/i.test(rest)) {
-      return {
-        actionUrl: rest,
-        source: 'solana-action',
-      };
+    if (!/^https?:\/\//i.test(rest)) {
+      throw new Error('A valid Blink action URL is required');
     }
+    return {
+      actionUrl: rest,
+      source: 'solana-action',
+    };
   }
 
   let url: URL;
@@ -65,12 +70,16 @@ export function parseBlinkUrl(
   if (interstitial) {
     const decoded = decodeURIComponent(interstitial);
     if (/^solana-action:/i.test(decoded)) {
+      const rest = stripProtocolPrefix(decoded, 'solana-action:');
+      if (!/^https?:\/\//i.test(rest)) {
+        throw new Error('A valid Blink action URL is required');
+      }
       return {
-        actionUrl: stripProtocolPrefix(decoded, 'solana-action:'),
+        actionUrl: rest,
         source: 'interstitial',
       };
     }
-    if (/^https?:/i.test(decoded)) {
+    if (/^https?:\/\//i.test(decoded)) {
       return {
         actionUrl: decoded,
         source: 'interstitial',

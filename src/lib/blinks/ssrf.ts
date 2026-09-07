@@ -104,6 +104,15 @@ export const isBlockedHostname = (hostname: string) => {
   return false;
 };
 
+const isNonCanonicalIpHostname = (hostname: string) => {
+  if (isIP(hostname)) return false;
+  if (/^\d+$/.test(hostname)) return true;
+  if (/^0x[0-9a-f]+$/i.test(hostname)) return true;
+  if (/^\d+(?:\.\d+){1,3}$/.test(hostname)) return true;
+  if (/(?:^|\.)0[0-7]{2,}(?:\.|$)/.test(hostname)) return true;
+  return false;
+};
+
 export type LookupAll = (
   hostname: string
 ) => Promise<Array<{ address: string }>>;
@@ -129,6 +138,10 @@ export const parsePublicHttpUrl = (value: string) => {
   const hostname = normalizeHostname(url.hostname);
   if (!hostname) {
     throw new UnsafeBlinkUrlError('Blink action URL is invalid');
+  }
+
+  if (isNonCanonicalIpHostname(hostname)) {
+    throw new UnsafeBlinkUrlError();
   }
 
   if (isBlockedHostname(hostname)) {

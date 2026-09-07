@@ -54,7 +54,7 @@ export function canExecuteAction(
   action: BlinkLinkedAction | undefined,
   params: Record<string, string>
 ): boolean {
-  if (!action) return false;
+  if (!action?.href) return false;
   const stillMissing = templateNames(action.href).filter(
     (name) => !hasParamValue(params[name])
   );
@@ -72,6 +72,10 @@ export function applyActionParams(
   href: string,
   params: Record<string, string> = {}
 ): AppliedActionParams {
+  if (!href) {
+    throw new Error('Blink action is missing a URL');
+  }
+
   const used = new Set<string>();
   const substituted = href.replace(
     /\{([a-zA-Z0-9_]+)\}/g,

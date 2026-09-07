@@ -46,19 +46,15 @@ const safeUrl = (value: string) => assertSafeActionUrl(value, lookupAll);
 
 const readLimitedText = async (response: Response) => {
   const length = Number(response.headers.get('content-length') ?? '0');
-  if (length > MAX_BODY_BYTES) {
+  if (Number.isFinite(length) && length > MAX_BODY_BYTES) {
     throw new Error('Blink response was too large');
   }
 
-  const reader = response.body?.getReader();
-  if (!reader) {
-    const text = await response.text();
-    if (new TextEncoder().encode(text).length > MAX_BODY_BYTES) {
-      throw new Error('Blink response was too large');
-    }
-    return text;
+  if (!response.body) {
+    return '';
   }
 
+  const reader = response.body.getReader();
   const chunks: Uint8Array[] = [];
   let received = 0;
   while (true) {
@@ -305,7 +301,7 @@ export async function POST(req: Request) {
       return jsonError('Blink did not return an external link', 502);
     }
 
-    if (type === 'message' && payload.data == null && !payload.message) {
+    if (type === 'message' && payload.data == null) {
       return jsonError('Blink did not return a message to sign', 502);
     }
 

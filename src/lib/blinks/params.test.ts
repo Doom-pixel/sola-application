@@ -87,6 +87,13 @@ describe('applyActionParams', () => {
       /Missing Blink parameter/
     );
   });
+
+  it('throws when the action href is missing', () => {
+    assert.throws(
+      () => applyActionParams('https://actions.alice.com/donate', '', {}),
+      /missing a URL/
+    );
+  });
 });
 
 describe('canExecuteAction', () => {
@@ -97,5 +104,12 @@ describe('canExecuteAction', () => {
 
   it('is false when a required template is missing', () => {
     assert.equal(canExecuteAction(flipAction, {}), false);
+  });
+
+  it('is false when the action href is missing', () => {
+    assert.equal(
+      canExecuteAction({ label: 'Flip', href: '' }, { amount: '1' }),
+      false
+    );
   });
 });

@@ -16,20 +16,33 @@ export function bytesToBase64(value: Uint8Array): string {
 }
 
 export function base64ToBytes(value: string): Uint8Array {
-  if (typeof Buffer !== 'undefined') {
-    return new Uint8Array(Buffer.from(value, 'base64'));
+  const compact = value.replace(/\s+/g, '');
+  if (!isBase64(compact)) {
+    throw new Error('Invalid base64 payload');
   }
-  return Uint8Array.from(atob(value), (char) => char.charCodeAt(0));
+
+  if (typeof Buffer !== 'undefined') {
+    return new Uint8Array(Buffer.from(compact, 'base64'));
+  }
+  return Uint8Array.from(atob(compact), (char) => char.charCodeAt(0));
 }
+
+const isBase64 = (value: string) =>
+  value.length > 0 &&
+  value.length % 4 === 0 &&
+  /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(
+    value
+  );
 
 export function getSignMessageBytes(
   data: string | Record<string, unknown> | undefined
 ): Uint8Array {
   if (typeof data === 'string') {
-    if (!data) {
+    try {
+      return base64ToBytes(data);
+    } catch {
       throw new Error('Blink did not return a message to sign');
     }
-    return base64ToBytes(data);
   }
 
   if (data && typeof data === 'object') {

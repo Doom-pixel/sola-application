@@ -43,6 +43,29 @@ describe('findRequestedAction', () => {
     assert.equal(findRequestedAction(unlabeled, 'vote no')?.href, '/no');
     assert.equal(findRequestedAction(unlabeled, 'missing')?.href, '/yes');
   });
+
+  it('does not let an empty label steal substring matches', () => {
+    const unlabeled = [
+      { href: '/yes', type: 'transaction' as const, label: undefined },
+      { label: 'Go', href: '/go', type: 'transaction' as const },
+    ] as Parameters<typeof findRequestedAction>[0];
+
+    assert.equal(findRequestedAction(unlabeled, 'going')?.href, '/go');
+  });
+
+  it('fills in a fallback label for unlabeled linked actions', () => {
+    const actions = getLinkedActions(
+      {
+        title: 'Donate',
+        links: {
+          actions: [{ href: '/donate', label: undefined as unknown as string }],
+        },
+      },
+      'https://actions.alice.com/donate'
+    );
+    assert.equal(actions[0].label, 'Run Blink');
+    assert.equal(actions[0].href, '/donate');
+  });
 });
 
 describe('sanitizeHttpUrl', () => {

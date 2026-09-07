@@ -44,6 +44,9 @@ describe('parsePublicHttpUrl', () => {
     assert.throws(() => parsePublicHttpUrl('http://user:pass@example.com'));
     assert.throws(() => parsePublicHttpUrl('http://127.0.0.1/secret'));
     assert.throws(() => parsePublicHttpUrl('http://[::1]/'));
+    assert.throws(() => parsePublicHttpUrl('http://2130706433/'));
+    assert.throws(() => parsePublicHttpUrl('http://127.1/'));
+    assert.throws(() => parsePublicHttpUrl('http://0x7f000001/'));
   });
 
   it('accepts public https URLs', () => {

@@ -26,5 +26,6 @@ describe('getSignMessageBytes', () => {
   it('throws when no signable data is present', () => {
     assert.throws(() => getSignMessageBytes(undefined), /message to sign/);
     assert.throws(() => getSignMessageBytes(''), /message to sign/);
+    assert.throws(() => getSignMessageBytes('not-base64'), /message to sign/);
   });
 });

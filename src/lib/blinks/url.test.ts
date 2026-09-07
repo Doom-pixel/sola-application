@@ -41,6 +41,17 @@ describe('parseBlinkUrl', () => {
   it('rejects empty input', () => {
     assert.throws(() => parseBlinkUrl('   '), /required/i);
   });
+
+  it('rejects non-http schemes after solana-action unwrapping', () => {
+    assert.throws(
+      () => parseBlinkUrl('solana-action:javascript:alert(1)'),
+      /valid Blink action URL/i
+    );
+    assert.throws(
+      () => parseBlinkUrl('solana-action:'),
+      /valid Blink action URL/i
+    );
+  });
 });
 
 describe('applyActionsJsonRules', () => {

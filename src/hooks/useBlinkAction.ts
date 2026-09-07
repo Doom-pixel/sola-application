@@ -84,6 +84,7 @@ export function useBlinkAction(props: BlinkToolData) {
   }, []);
 
   const loadMetadata = useCallback(async () => {
+    autoExecuteTriggered.current = false;
     setStatus('loading');
     setStatusText('Loading Blink');
     setError(null);

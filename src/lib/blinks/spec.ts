@@ -21,12 +21,14 @@ export function getLinkedActions(
 ): BlinkLinkedAction[] {
   const actions = metadata?.links?.actions;
   if (actions?.length) {
-    return actions.map((action) => ({
-      type: action.type ?? 'transaction',
-      href: action.href || fallbackUrl,
-      label: action.label,
-      parameters: action.parameters,
-    }));
+    return actions
+      .filter((action): action is BlinkLinkedAction => Boolean(action))
+      .map((action) => ({
+        type: action.type ?? 'transaction',
+        href: action.href || fallbackUrl,
+        label: action.label?.trim() || metadata?.label || 'Run Blink',
+        parameters: action.parameters,
+      }));
   }
 
   return [
@@ -38,6 +40,9 @@ export function getLinkedActions(
   ];
 }
 
+const actionSearchLabel = (action: BlinkLinkedAction) =>
+  (action.label ?? '').trim().toLowerCase();
+
 export function findRequestedAction(
   actions: BlinkLinkedAction[],
   requestedLabel?: string
@@ -46,14 +51,18 @@ export function findRequestedAction(
   if (!requestedLabel) return actions[0];
 
   const needle = requestedLabel.trim().toLowerCase();
+  if (!needle) return actions[0];
+
   return (
-    actions.find((action) => (action.label ?? '').toLowerCase() === needle) ??
-    actions.find((action) =>
-      (action.label ?? '').toLowerCase().includes(needle)
-    ) ??
-    actions.find((action) =>
-      needle.includes((action.label ?? '').toLowerCase())
-    ) ??
+    actions.find((action) => actionSearchLabel(action) === needle) ??
+    actions.find((action) => {
+      const label = actionSearchLabel(action);
+      return label.length > 0 && label.includes(needle);
+    }) ??
+    actions.find((action) => {
+      const label = actionSearchLabel(action);
+      return label.length > 0 && needle.includes(label);
+    }) ??
     actions[0]
   );
 }

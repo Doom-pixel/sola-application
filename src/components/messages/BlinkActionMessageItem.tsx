@@ -155,11 +155,11 @@ export const BlinkActionMessageItem: FC<BlinkActionMessageItemProps> = ({
         )}
 
         <div className="flex flex-wrap gap-2">
-          {actions.map((action) => {
+          {actions.map((action, index) => {
             const isSelected = action === selectedAction;
             return (
               <button
-                key={`${action.label}-${action.href}`}
+                key={`${index}-${action.href}-${action.label}`}
                 type="button"
                 onClick={() => executeBlinkAction(action)}
                 disabled={
