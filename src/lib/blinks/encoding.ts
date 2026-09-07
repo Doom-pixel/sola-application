@@ -22,6 +22,23 @@ export function base64ToBytes(value: string): Uint8Array {
   return Uint8Array.from(atob(value), (char) => char.charCodeAt(0));
 }
 
+export function getSignMessageBytes(
+  data: string | Record<string, unknown> | undefined
+): Uint8Array {
+  if (typeof data === 'string') {
+    if (!data) {
+      throw new Error('Blink did not return a message to sign');
+    }
+    return base64ToBytes(data);
+  }
+
+  if (data && typeof data === 'object') {
+    return new TextEncoder().encode(JSON.stringify(data));
+  }
+
+  throw new Error('Blink did not return a message to sign');
+}
+
 export function encodeBase58(bytes: Uint8Array): string {
   if (!bytes.length) return '';
 

@@ -17,6 +17,7 @@ import {
   bytesToBase64,
   deserializeTransaction,
   encodeBase58,
+  getSignMessageBytes,
 } from '@/lib/blinks/encoding';
 import type {
   BlinkExecutePayload,
@@ -167,11 +168,7 @@ export function useBlinkAction(props: BlinkToolData) {
       }
 
       setStatusText('Waiting for message signature');
-      const text =
-        typeof payload.data === 'string'
-          ? payload.data
-          : payload.message || JSON.stringify(payload.data);
-      const encoded = new TextEncoder().encode(text);
+      const encoded = getSignMessageBytes(payload.data);
       const signed = await wallet.signMessage(encoded);
       return encodeBase58(new Uint8Array(signed));
     },
@@ -256,10 +253,11 @@ export function useBlinkAction(props: BlinkToolData) {
 
       try {
         void applyActionParams(props.actionUrl, action.href, nextParams);
+        const wallet = assertWallet();
         const data = await proxyBlink({
           intent: 'execute',
           actionUrl: props.actionUrl,
-          account: props.account,
+          account: props.account || wallet.address,
           actionHref: action.href,
           params: nextParams,
           actionType: action.type ?? 'transaction',
@@ -287,7 +285,7 @@ export function useBlinkAction(props: BlinkToolData) {
             intent: 'next',
             actionUrl: props.actionUrl,
             actionHref: next.href,
-            account: props.account,
+            account: props.account || wallet.address,
             signature: signatureOrNull,
             state: data.payload.state,
             signedData: data.payload.data,
@@ -311,6 +309,7 @@ export function useBlinkAction(props: BlinkToolData) {
       }
     },
     [
+      assertWallet,
       handlePayload,
       metadata?.disabled,
       metadata?.error?.message,
@@ -340,11 +339,11 @@ export function useBlinkAction(props: BlinkToolData) {
       return;
     }
 
-    autoExecuteTriggered.current = true;
     if (!readyToExecute || metadata?.disabled) {
       return;
     }
 
+    autoExecuteTriggered.current = true;
     executeBlinkAction().catch(() => undefined);
   }, [
     executeBlinkAction,

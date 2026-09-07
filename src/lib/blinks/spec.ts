@@ -47,9 +47,13 @@ export function findRequestedAction(
 
   const needle = requestedLabel.trim().toLowerCase();
   return (
-    actions.find((action) => action.label.toLowerCase() === needle) ??
-    actions.find((action) => action.label.toLowerCase().includes(needle)) ??
-    actions.find((action) => needle.includes(action.label.toLowerCase())) ??
+    actions.find((action) => (action.label ?? '').toLowerCase() === needle) ??
+    actions.find((action) =>
+      (action.label ?? '').toLowerCase().includes(needle)
+    ) ??
+    actions.find((action) =>
+      needle.includes((action.label ?? '').toLowerCase())
+    ) ??
     actions[0]
   );
 }

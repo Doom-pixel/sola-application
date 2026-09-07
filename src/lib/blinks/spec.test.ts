@@ -33,6 +33,16 @@ describe('findRequestedAction', () => {
   it('falls back to the first action', () => {
     assert.equal(findRequestedAction(actions)?.label, 'Vote Yes');
   });
+
+  it('does not throw when an action is missing a label', () => {
+    const unlabeled = [
+      { href: '/yes', type: 'transaction' as const, label: undefined },
+      { label: 'Vote No', href: '/no', type: 'transaction' as const },
+    ] as Parameters<typeof findRequestedAction>[0];
+
+    assert.equal(findRequestedAction(unlabeled, 'vote no')?.href, '/no');
+    assert.equal(findRequestedAction(unlabeled, 'missing')?.href, '/yes');
+  });
 });
 
 describe('sanitizeHttpUrl', () => {

@@ -67,7 +67,7 @@ export interface BlinkToolData {
   title?: string;
   label?: string;
   params?: Record<string, string>;
-  account: string;
+  account?: string;
   autoExecute?: boolean;
 }
 

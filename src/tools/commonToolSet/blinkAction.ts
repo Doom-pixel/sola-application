@@ -3,6 +3,10 @@ import { z } from 'zod';
 import { ToolContext, ToolResult } from '@/types/tool';
 import { findKnownBlinkGame, KNOWN_BLINK_GAME_IDS } from '@/config/blinks';
 import { parseBlinkUrl } from '@/lib/blinks/url';
+import {
+  blinkWalletError,
+  shouldAutoExecuteBlink,
+} from '@/lib/blinks/toolPolicy';
 import type { BlinkToolData } from '@/types/blink';
 
 const Parameters = z.object({
@@ -43,10 +47,11 @@ export function createBlinkActionTool(context: ToolContext) {
       'Opens a Solana Blink (Blockchain Action) in Sola custom UI and can execute it handsfree. Use for Blink/Action URLs and known games such as coin flip, snakes, and rock paper scissors. Do not tell the user to click a third-party Blink renderer.',
     parameters: Parameters,
     execute: async ({ actionUrl, actionName, label, params, autoExecute }) => {
-      if (!context.publicKey) {
+      const walletError = blinkWalletError(autoExecute, context.publicKey);
+      if (walletError) {
         return {
           success: false,
-          error: 'No wallet connected',
+          error: walletError,
           data: undefined,
         };
       }
@@ -72,7 +77,7 @@ export function createBlinkActionTool(context: ToolContext) {
           label,
           params: params ?? {},
           account: context.publicKey,
-          autoExecute: autoExecute !== false,
+          autoExecute: shouldAutoExecuteBlink(autoExecute),
         };
 
         return {
